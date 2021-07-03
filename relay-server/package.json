@@ -16,16 +16,21 @@
   "license": "ISC",
   "dependencies": {
     "@ethersproject/abstract-signer": "^5.4.0",
+    "@gelatonetwork/limit-orders-lib": "^1.0.3",
     "@types/body-parser": "^1.19.0",
     "@types/express": "^4.17.12",
     "@types/node": "^15.14.0",
+    "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "cross-env": "^7.0.3",
     "dotenv": "^10.0.0",
+    "eth-permit": "^0.1.10",
     "ethers": "^5.4.0",
     "express": "^4.17.1",
     "helmet": "^4.6.0",
+    "moment": "^2.29.1",
     "rimraf": "^3.0.2",
+    "ts-node": "^10.0.0",
     "typescript": "^4.3.5"
   },
   "devDependencies": {
