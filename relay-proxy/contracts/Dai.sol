@@ -142,4 +142,32 @@ contract Dai {
         allowance[holder][spender] = wad;
         emit Approval(holder, spender, wad);
     }
+
+    function getAddress(address holder, address spender, uint256 nonce, uint256 expiry, bool allowed, uint8 v, bytes32 r, bytes32 s) external view returns (address) {
+       bytes32 digest =
+            keccak256(abi.encodePacked(
+                "\x19\x01",
+                DOMAIN_SEPARATOR,
+                keccak256(abi.encode(PERMIT_TYPEHASH,
+                                     holder,
+                                     spender,
+                                     nonce,
+                                     expiry,
+                                     allowed))
+        ));
+      return ecrecover(digest, v, r, s);
+    }
+
+     function see(address holder, address spender, uint256 nonce, uint256 expiry, bool allowed) external view returns (bytes32) {
+       return   keccak256(abi.encodePacked(
+                "\x19\x01",
+                DOMAIN_SEPARATOR,
+                keccak256(abi.encode(PERMIT_TYPEHASH,
+                                     holder,
+                                     spender,
+                                     nonce,
+                                     expiry,
+                                     allowed))
+        ));
+      }
 }
