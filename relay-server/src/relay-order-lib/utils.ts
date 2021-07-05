@@ -1,11 +1,10 @@
 import { Wallet, utils, BigNumberish, Signature, Contract, providers } from 'ethers';
 import { Signer } from '@ethersproject/abstract-signer';
 import { Provider } from "@ethersproject/abstract-provider";
-import { ecsign, ECDSASignature, keccak256, bufferToHex } from "ethereumjs-util";
 import { Approve } from './types';
 import config from '../../config';
 import ABI from "../../abi/dai.json";
-import Web3 from 'web3';
+import { ecsign, ECDSASignature, bufferToHex } from 'ethereumjs-util'
 
 import { signDaiPermit } from 'eth-permit';
 
@@ -28,7 +27,6 @@ export const generateDomainSeparator = (name: string, daiAddress: string, chainI
 }
 
 export const generateDaiDigest = (version: string, name: string, chainId: number, nonce: BigNumberish, expiry: BigNumberish, approve: Approve): string => {
-  const DOMAIN = "0xc2b22ec1d5d3f57ee203ad7ef46fdafd629abff9ed7392c7533b7ee2b32f8082"
   const DOMAIN_SEPARATOR = generateDomainSeparator(name, config.DAI_ADDRESS, chainId, version);
   console.log("DOMAIN_SEPARATOR: ", DOMAIN_SEPARATOR)
   const encodePacked = utils.solidityPack(
@@ -46,25 +44,21 @@ export const generateDaiDigest = (version: string, name: string, chainId: number
   return utils.keccak256(encodePacked);
 }
 
-export const generateSignature = async (web3: Web3, signerOrProvider: Wallet, chainId: number, nonce: BigNumberish, expiry: BigNumberish, approve: Approve): Promise<Signature> => {
+export const generateSignature = async (signerOrProvider: Wallet, chainId: number, nonce: BigNumberish, expiry: BigNumberish, approve: Approve): Promise<ECDSASignature> => {
   const digest = generateDaiDigest(config.DAI_VERSION, config.DAI_NAME, chainId, nonce, expiry, approve);
-  console.log("SEE: ", digest)
-  console.log("EXPIRY: ", expiry)
-  const digestBytes = utils.arrayify(digest)
-
-  const signature = await signerOrProvider.signMessage(digestBytes)
-  const recoveredAddress = utils.verifyMessage(digestBytes, signature);
-  const sig = utils.splitSignature(signature); 
-  console.log("recoveredAddress: ", recoveredAddress)
-  const hashMsg = utils.hashMessage(digestBytes)
-  console.log("MAIN: ", utils.recoverAddress(digestBytes, {r: sig.r, s: sig.s, v: sig.v}))
-  console.log(utils.splitSignature(signature))
-
-
   const contract = await daiContract(signerOrProvider);
-  const addr = await contract.permit(approve.holder, approve.spender, nonce, expiry, approve.allowed, sig.v, sig.r, sig.s)
-  console.log("FROM: ", addr)
-  return utils.splitSignature(signature); 
+  const signature = sign(digest, Buffer.from("4a99e893ee9142f1b8290513d0a0788ec01659713e9b667eee1c7167cf7db9df", 'hex'))
+  const addr = await contract.getAddress(approve.holder, approve.spender, nonce, expiry, approve.allowed, signature.v, signature.r, signature.s) 
+  console.log("ADDR: ", addr)
+  const tx = await contract.permit(approve.holder, approve.spender, nonce, expiry, approve.allowed, signature.v, signature.r, signature.s)
+  console.log("TX: ", tx.hash)
+
+  console.log("BAL: ", (await contract.allowance(approve.holder, approve.spender)).toString())
+  return signature; 
+}
+
+export const sign = (digest: any, privateKey: any) => {
+  return ecsign(Buffer.from(digest.slice(2), 'hex'), privateKey)
 }
 
 export const signerIsValid = (signer: Signer): boolean => {

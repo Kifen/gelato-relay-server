@@ -7,10 +7,8 @@ import { utils, BigNumberish, Signature, Wallet } from 'ethers';
 import config from '../../config';
 import { providerIsValid, signerIsValid, generateSignature, daiContract } from './utils';
 import { sign } from 'crypto';
-import Web3 from 'web3';
 
 export const submitLimitOrder = async (
-  web3: Web3,
   signerOrProvider: Wallet,
   inputToken: string,
   outputToken: string,
@@ -34,7 +32,7 @@ export const submitLimitOrder = async (
     allowed: true
   }
   
-  const signature = await generateSignature(web3, signerOrProvider, chainId, nonce, expiry, approve);
+  const signature = await generateSignature(signerOrProvider, chainId, nonce, expiry, approve);
   const data = {
     signature: {
       v: signature.v,

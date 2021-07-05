@@ -158,6 +158,10 @@ contract Dai {
       return ecrecover(digest, v, r, s);
     }
 
+    function domain() public view returns (bytes32) {
+      return DOMAIN_SEPARATOR;
+    }
+
      function see(address holder, address spender, uint256 nonce, uint256 expiry, bool allowed) external view returns (bytes32) {
        return   keccak256(abi.encodePacked(
                 "\x19\x01",
