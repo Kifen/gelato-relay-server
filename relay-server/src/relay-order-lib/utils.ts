@@ -1,10 +1,11 @@
-import { utils, BigNumberish, Signature, Contract, providers } from 'ethers';
+import { Wallet, utils, BigNumberish, Signature, Contract, providers } from 'ethers';
 import { Signer } from '@ethersproject/abstract-signer';
 import { Provider } from "@ethersproject/abstract-provider";
-import abi from "ethereumjs-abi";
+import { ecsign, ECDSASignature, keccak256, bufferToHex } from "ethereumjs-util";
 import { Approve } from './types';
 import config from '../../config';
 import ABI from "../../abi/dai.json";
+import Web3 from 'web3';
 
 import { signDaiPermit } from 'eth-permit';
 
@@ -29,12 +30,13 @@ export const generateDomainSeparator = (name: string, daiAddress: string, chainI
 export const generateDaiDigest = (version: string, name: string, chainId: number, nonce: BigNumberish, expiry: BigNumberish, approve: Approve): string => {
   const DOMAIN = "0xc2b22ec1d5d3f57ee203ad7ef46fdafd629abff9ed7392c7533b7ee2b32f8082"
   const DOMAIN_SEPARATOR = generateDomainSeparator(name, config.DAI_ADDRESS, chainId, version);
+  console.log("DOMAIN_SEPARATOR: ", DOMAIN_SEPARATOR)
   const encodePacked = utils.solidityPack(
     ['bytes1', 'bytes1', 'bytes32', 'bytes32'],
     [
       "0x19",
       '0x01', 
-      DOMAIN,
+      DOMAIN_SEPARATOR,
       utils.keccak256(new utils.AbiCoder().encode(
         ['bytes32', 'address', 'address', 'uint256', 'uint256', 'bool'],
         [PERMIT_TYPEHASH, approve.holder, approve.spender, nonce, expiry, approve.allowed]
@@ -44,15 +46,25 @@ export const generateDaiDigest = (version: string, name: string, chainId: number
   return utils.keccak256(encodePacked);
 }
 
-export const generateSignature = async (signerOrProvider: Signer, chainId: number, nonce: BigNumberish, expiry: BigNumberish, approve: Approve): Promise<Signature> => {
+export const generateSignature = async (web3: Web3, signerOrProvider: Wallet, chainId: number, nonce: BigNumberish, expiry: BigNumberish, approve: Approve): Promise<Signature> => {
   const digest = generateDaiDigest(config.DAI_VERSION, config.DAI_NAME, chainId, nonce, expiry, approve);
   console.log("SEE: ", digest)
-  const messageHashBytes = utils.arrayify(digest)
-  const flatSig = await signerOrProvider.signMessage(messageHashBytes)
-  const sig = utils.splitSignature(flatSig)
-  console.log(sig)
-  console.log(utils.recoverAddress(messageHashBytes, {r: sig.r, v: sig.v, s: sig.s}))
-  return utils.splitSignature(flatSig); 
+  console.log("EXPIRY: ", expiry)
+  const digestBytes = utils.arrayify(digest)
+
+  const signature = await signerOrProvider.signMessage(digestBytes)
+  const recoveredAddress = utils.verifyMessage(digestBytes, signature);
+  const sig = utils.splitSignature(signature); 
+  console.log("recoveredAddress: ", recoveredAddress)
+  const hashMsg = utils.hashMessage(digestBytes)
+  console.log("MAIN: ", utils.recoverAddress(digestBytes, {r: sig.r, s: sig.s, v: sig.v}))
+  console.log(utils.splitSignature(signature))
+
+
+  const contract = await daiContract(signerOrProvider);
+  const addr = await contract.permit(approve.holder, approve.spender, nonce, expiry, approve.allowed, sig.v, sig.r, sig.s)
+  console.log("FROM: ", addr)
+  return utils.splitSignature(signature); 
 }
 
 export const signerIsValid = (signer: Signer): boolean => {
@@ -74,33 +86,4 @@ export const providerIsValid = (signerOrProvider: Signer): boolean => {
 
 export const daiContract = async (provider: Signer): Promise<Contract> => {
   return new Contract(config.DAI_ADDRESS, ABI.abi, provider);
-}
-
-export const typedData = async (signerOrProvider: Signer, nonce: BigNumberish, expiry: BigNumberish, approve: Approve) => {
-  const domain = {
-    name: 'Dai Stablecoin',
-    version: '1',
-    chainId: 3,
-    verifyingContract: '0x79C2CfEdeB9bA2cCdd9D6C9bc771243209949720'
-  };
-
-  const types = {
-    Permit: [
-      { name: "holder", type: "address" },
-      { name: "spender", type: "address" },
-      { name: "nonce", type: "uint256" },
-      { name: "expiry", type: "uint256" },
-      { name: "allowed", type: "bool" },
-  ],
-  }
-
-  const value = {
-    holder: approve.holder, 
-    spender: approve.spender,
-    nonce,
-    expiry,
-    allowed: approve.allowed
-  }
-
-  signerOrProvider.
 }
