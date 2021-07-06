@@ -57,8 +57,8 @@ describe("RelayProxy", () => {
     const digest = await generatePermitDigest(dai.address, version, name, chainId, nonce, expiry, approve);
     const sig = sign(digest, pk)
 
-    await relayProxy.submitDaiLimitOrder(approve.holder, approve.spender, nonce, expiry, approve.allowed, sig.v, sig.r, sig.s, vaultAddress, value)
-
+    const tx = await relayProxy.submitDaiLimitOrder(approve.holder, approve.spender, nonce, expiry, approve.allowed, sig.v, sig.r, sig.s, vaultAddress, value)
+    console.log(tx)
     const holderBalance: BigNumber = mintAmount.sub(value)
 
     expect(await dai.balanceOf(approve.holder)).to.eq(holderBalance)

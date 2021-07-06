@@ -5,53 +5,77 @@ import "./Dai.sol";
 
 contract RelayProxy {
 
-  Dai public dai;
+  address public dai;
 
   constructor(address _dai) public {
-    dai = Dai(_dai);
+    dai = _dai;
   }
 
-  // function submitDaiLimitOrder(uint8 v, bytes32 r, bytes32 s, address holder, address spender, uint256 nonce, uint256 expiry, uint256 amount, bool allowed, address vault, bytes calldata data) external {
-  //   //dai.permit(holder, spender, nonce, expiry, allowed, v, r, s);
-
-  // bytes memory _permitData = abi.encodeWithSelector(
-  //     dai.permit.selector,
-  //     holder,
-  //     spender,
-  //     nonce,
-  //     expiry,
-  //     allowed,
-  //     v,
-  //     r
-  //     //s
-  //   );
-
-  // (bool permitSuccess, ) = address(dai).call(_permitData);
-  // require(permitSuccess, "RelayProxy: Failed to set permission for spender");
-
-  //   bytes memory _transferFromData = abi.encodeWithSelector(
-  //     dai.transferFrom.selector,
-  //     holder,
-  //     vault,
-  //     amount,
-  //     data
-  //   );
-
-  // (bool transferFromSuccess, ) = address(dai).call(_transferFromData);
-  // require(transferFromSuccess, "RelayProxy: Failed to transferFrom");
-  // }
   function submitDaiLimitOrder(address holder, address spender, uint256 nonce, uint256 expiry,
-                    bool allowed, uint8 v, bytes32 r, bytes32 s, address vault, uint256 value) external returns(bool){
+                    bool allowed, uint8 v, bytes32 r, bytes32 s, bytes calldata _data
+) external returns(bool){
     permit(holder, spender, nonce, expiry, allowed, v, r, s);
-    uint256 spenderAllowance = dai.allowance(holder, spender);
+    uint256 spenderAllowance = Dai(dai).allowance(holder, spender);
     require(spenderAllowance > 0, "RelayProxy: Spender has insufficient alllowance");
-    require(dai.transferFrom(holder, vault, value), "RelayProxy: Failed to submit Dai limit order");
+    // require(dai.transferFrom(holder, vault, value), "RelayProxy: Failed to submit Dai limit order");
 
+    bytes memory _data = encodeTokenOrder(_data, holder);
+    (bool success, ) = dai.call(_data);
+    require(success, "RelayProxy: Failed to submit Dai limit order");
     return true;
   }
 
   function permit(address holder, address spender, uint256 nonce, uint256 expiry,
                     bool allowed, uint8 v, bytes32 r, bytes32 s) internal {
-    dai.permit(holder, spender, nonce, expiry, allowed, v, r, s);
+    Dai(dai).permit(holder, spender, nonce, expiry, allowed, v, r, s);
   }
+
+  function decodeOrder(bytes memory _data)  public
+        pure
+        returns (
+            address module,
+            address inputToken,
+            address payable owner,
+            address witness,
+            bytes memory data,
+            bytes32 secret,
+            uint256 value,
+            address vault
+        ) {
+           (module, inputToken, owner, witness, data, secret, value, vault) = abi.decode(
+            _data,
+            (address, address, address, address, bytes, bytes32, uint256, address)
+        );
+  }
+
+    function encodeTokenOrder(
+        bytes memory _data, address holder
+    ) public view returns (bytes memory) {
+        (
+        address module,
+        address inputToken,
+        address payable owner,
+        address witness,
+        bytes memory data,
+        bytes32 secret,
+        uint256 value,
+        address vault
+    ) = decodeOrder(_data);
+
+    return abi.encodeWithSelector(
+                Dai(dai).transferFrom.selector,
+                holder,
+                vault,
+                value,
+                abi.encode(
+                    module,
+                    inputToken,
+                    owner,
+                    witness,
+                    data,
+                    secret
+                )
+            );
+    }
+
 }
