@@ -49,18 +49,38 @@ describe("RelayProxy", () => {
     await relayProxy.deployed()
     relayProxyAddress = relayProxy.address;
 
-    // Mint some dai tokens for deployer
-    await dai.mint(deployerAddress, mintAmount);
-    expect(await dai.balanceOf(deployerAddress)).to.eq(mintAmount)
-  })
-
-  it("Should successfully permit spender and submit limit order", async () => {
     approve = {
       spender: relayProxyAddress,
       holder: deployerAddress,
       allowed: true
     }
 
+    // Mint some dai tokens for deployer
+    await dai.mint(deployerAddress, mintAmount);
+    expect(await dai.balanceOf(deployerAddress)).to.eq(mintAmount)
+  })
+
+  it("should decode a submit order data", async () => {
+    const endodedSubmitData = encodeSubmitOrder(mockModuleAddress, dai.address, ETH, ownerAddress, minReturn, inputAmount, vaultAddress)
+
+    const utilsDecodedData = new utils.AbiCoder().decode(
+      ["address", "address", "address", "address", "bytes", "bytes32", "uint256", "address"],
+      endodedSubmitData
+    )
+
+    const contractDecodedData = await relayProxy.decodeOrder(endodedSubmitData);
+
+    expect(utilsDecodedData[0]).to.eq(contractDecodedData.module)
+    expect(utilsDecodedData[1]).to.eq(contractDecodedData.inputToken)
+    expect(utilsDecodedData[2]).to.eq(contractDecodedData.owner)
+    expect(utilsDecodedData[3]).to.eq(contractDecodedData.witness)
+    expect(utilsDecodedData[4]).to.eq(contractDecodedData.data)
+    expect(utilsDecodedData[5]).to.eq(contractDecodedData.secret)
+    expect(utilsDecodedData[6]).to.eq(contractDecodedData.value)
+    expect(utilsDecodedData[7]).to.eq(contractDecodedData.vault)
+  })
+
+  it("Should successfully permit spender and submit limit order", async () => {
     const digest = await generatePermitDigest(dai.address, version, name, chainId, nonce, expiry, approve);
     const sig = sign(digest, pk)
 
