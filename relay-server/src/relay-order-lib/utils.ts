@@ -53,27 +53,33 @@ export const sign = (digest: any, privateKey: string): ECDSASignature => {
   return ecsign(Buffer.from(digest.slice(2), 'hex'), Buffer.from(privateKey, 'hex'))
 }
 
-export const encodeSubmitOrder = (module: string, inputToken: string, outputToken: string, owner: string, minReturn: BigNumberish, inputAmount: BigNumberish, vault: string, handlerAddress?: string): string => {
-  const randomSecret = utils.hexlify(utils.randomBytes(13)).replace("0x", "")
-  const fullSecret = `0x4200696e652e66696e616e63652020d83ddc09${randomSecret}`;
-  const { privateKey: secret, address: witness } = new Wallet(fullSecret);
+export const encodeSubmitOrder = (module: string, inputToken: string, outputToken: string, owner: string, minReturn: BigNumberish, inputAmount: BigNumberish, vault: string, handlerAddress?: string, fullSecret?: string): string => {
+  if (!fullSecret) {
+    const randomSecret = utils.hexlify(utils.randomBytes(13)).replace("0x", "")
+    fullSecret = `0x4200696e652e66696e616e63652020d83ddc09${randomSecret}`;
+  }
+  
+    const { privateKey: secret, address: witness } = new Wallet(fullSecret);
 
-  const encodedData = handlerAddress
+    const data = encodedData(outputToken, minReturn, handlerAddress)
+    return new utils.AbiCoder().encode(
+      ["address", "address", "address", "address", "bytes", "bytes32", "uint256", "address"],
+      [module, inputToken, owner, witness, data, secret, inputAmount, vault]
+    )
+}
+
+export const encodedData = (outputToken: string, minReturn: BigNumberish, gelatoHandler?: string): string => {
+  const encodedData = gelatoHandler
   ? new utils.AbiCoder().encode(
       ["address", "uint256", "address"],
-      [outputToken, minReturn, handlerAddress]
+      [outputToken, minReturn, gelatoHandler]
     )
   : new utils.AbiCoder().encode(
       ["address", "uint256"],
       [outputToken, minReturn]
     ); 
 
-    const data = new utils.AbiCoder().encode(
-      ["address", "address", "address", "address", "bytes", "bytes32", "uint256", "address"],
-      [module, inputToken, owner, witness, encodedData, secret, inputAmount, vault]
-    )
-
-    return data;
+    return encodedData;
 }
 
 export const signerIsValid = (signer: Signer): boolean => {

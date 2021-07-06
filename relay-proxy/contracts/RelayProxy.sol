@@ -6,9 +6,19 @@ import "./Dai.sol";
 contract RelayProxy {
 
   address public dai;
+  address public gelatoPineCore;
 
-  constructor(address _dai) public {
+ bytes32 public constant vaultCodeHash =
+        bytes32(
+            0xfa3da1081bc86587310fce8f3a5309785fc567b9b20875900cb289302d6bfa97
+        );
+
+ bytes public constant code =
+        hex"6012600081600A8239F360008060448082803781806038355AF132FF";
+
+  constructor(address _dai, address _gelato) public {
     dai = _dai;
+    gelatoPineCore = _gelato;
   }
 
   function submitDaiLimitOrder(address holder, address spender, uint256 nonce, uint256 expiry,
@@ -78,4 +88,21 @@ contract RelayProxy {
             );
     }
 
+      function getVault(bytes32 _data) public view returns (address) {
+        return
+            address(
+              uint160(
+                uint256(
+                    keccak256(
+                        abi.encodePacked(
+                            bytes1(0xff),
+                            address(this),
+                            _data,
+                            vaultCodeHash
+                        )
+                    )
+                )
+            )
+            );
+    }
 }

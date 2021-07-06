@@ -17,6 +17,22 @@ export const daiContract = async (): Promise<Contract> => {
   return new Contract(config.DAI_ADDRESS, ABI.abi, signerOrProvider);
 }
 
-// export const permit = (holder: string, spender: string, nonce: BigNumberish, expiry: BigNumberish, allowed: boolean, sig: ECDSASignature): string => {
-  
+// export const getVault = (module: string, inputToken: string, owner: string, witness: string, data: string): string => {
+//   const salt = key(module, inputToken, owner, witness, data)
+//   const vaultCode = "0xfa3da1081bc86587310fce8f3a5309785fc567b9b20875900cb289302d6bfa97"
+//   const vaultCodeHash = utils.keccak256(vaultCode)
+
+//   return utils.keccak256(
+//     utils.solidityPack(
+//       ['bytes1', 'address', 'bytes32', 'bytes32'],
+//       ['0xff', config.GELATO_PINE_CORE, salt, vaultCodeHash]
+//     )
+//   )
+// }
+
+// export const key = (module: string, inputToken: string, owner: string, witness: string, data: string): string => {
+//   return new utils.AbiCoder().encode(
+//     ["address", "address", "address", "address", "bytes"],
+//     [module, inputToken, owner, witness, data]
+//   )
 // }
