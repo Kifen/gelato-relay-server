@@ -6,7 +6,7 @@ export const relay = async (req: Request, res: Response, next: NextFunction): Pr
   const data: RelayerOrder = req.body;
   console.log(data);
   const contract = await daiContract();
-  await contract.permit(data.approve.holder, data.approve.spender, data.nonce, data.expiry, true, data.signature.v, data.signature.r, data.signature.s)
+  // await contract.permit(data.approve.holder, data.approve.spender, data.nonce, data.expiry, true, data.signature.v, data.signature.r, data.signature.s)
   res.status(200).json({
     success: true
 });

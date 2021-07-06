@@ -1,12 +1,8 @@
-import { Signer } from '@ethersproject/abstract-signer';
-import { Provider } from "@ethersproject/abstract-provider";
 import { ChainId, Handler } from "@gelatonetwork/limit-orders-lib";
-import { Approve, RelayerOrder } from './types';
 import axios from 'axios';
-import { utils, BigNumberish, Signature, Wallet } from 'ethers';
+import { BigNumberish, Signature, Wallet } from 'ethers';
 import config from '../../config';
-import { providerIsValid, signerIsValid, generateSignature, daiContract } from './utils';
-import { sign } from 'crypto';
+import { providerIsValid, signerIsValid, generatePermitDigest, sign, daiContract } from './utils';
 
 export const submitLimitOrder = async (
   signerOrProvider: Wallet,
@@ -17,6 +13,7 @@ export const submitLimitOrder = async (
   handler: Handler,
   chainId: ChainId,  
   expiry: number,
+  pk: string,
 ) => {
   if (!(chainId as ChainId)) throw new Error("NETWORK NOT SUPPORTED");
   if (!signerIsValid(signerOrProvider)) throw new Error("Invalid Signer");
@@ -32,7 +29,8 @@ export const submitLimitOrder = async (
     allowed: true
   }
   
-  const signature = await generateSignature(signerOrProvider, chainId, nonce, expiry, approve);
+  const digest = await generatePermitDigest(config.DAI_ADDRESS, config.DAI_VERSION, config.DAI_NAME,chainId, nonce, expiry, approve);
+  const signature = sign(digest, pk)
   const data = {
     signature: {
       v: signature.v,
@@ -49,9 +47,9 @@ export const submitLimitOrder = async (
     expiry,
   }
 
-  // axios({
-  //   method: 'post',
-  //   url: config.RELAYER_SERVER_URL,
-  //   data: data,
-  // })
+  axios({
+    method: 'post',
+    url: config.RELAYER_SERVER_URL,
+    data: data,
+  })
 }

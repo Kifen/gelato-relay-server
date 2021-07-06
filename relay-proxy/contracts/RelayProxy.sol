@@ -40,11 +40,18 @@ contract RelayProxy {
   // (bool transferFromSuccess, ) = address(dai).call(_transferFromData);
   // require(transferFromSuccess, "RelayProxy: Failed to transferFrom");
   // }
-  function submitDaiLimitOrder(bytes calldata _permitData, bytes calldata _tranferFromData) external {
-    (bool _permitSuccess,) = address(dai).call(_permitData);
-    require(_permitSuccess, "RelayProxy: Failed to set permission for spender");
+  function submitDaiLimitOrder(address holder, address spender, uint256 nonce, uint256 expiry,
+                    bool allowed, uint8 v, bytes32 r, bytes32 s, address vault, uint256 value) external returns(bool){
+    permit(holder, spender, nonce, expiry, allowed, v, r, s);
+    uint256 spenderAllowance = dai.allowance(holder, spender);
+    require(spenderAllowance > 0, "RelayProxy: Spender has insufficient alllowance");
+    require(dai.transferFrom(holder, vault, value), "RelayProxy: Failed to submit Dai limit order");
 
-    (bool _transferFromSuccess,) = address(dai).call(_tranferFromData);
-    require(_transferFromSuccess, "RelayProxy: Failed to transferFrom");
+    return true;
+  }
+
+  function permit(address holder, address spender, uint256 nonce, uint256 expiry,
+                    bool allowed, uint8 v, bytes32 r, bytes32 s) internal {
+    dai.permit(holder, spender, nonce, expiry, allowed, v, r, s);
   }
 }

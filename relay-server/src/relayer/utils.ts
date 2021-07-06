@@ -4,6 +4,7 @@ import { Signer } from '@ethersproject/abstract-signer';
 import ABI from "../../abi/dai.json";
 //import RelayerABI from '../../build/contracts/RelayProxy.json';
 import config from '../../config';
+import { ECDSASignature } from 'ethereumjs-util'
 
 export const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextFunction) => {
   Promise.resolve(fn(req, res, next)).catch(next)
@@ -15,3 +16,7 @@ export const daiContract = async (): Promise<Contract> => {
   const signerOrProvider  = await signer.connect(provider);
   return new Contract(config.DAI_ADDRESS, ABI.abi, signerOrProvider);
 }
+
+// export const permit = (holder: string, spender: string, nonce: BigNumberish, expiry: BigNumberish, allowed: boolean, sig: ECDSASignature): string => {
+  
+// }

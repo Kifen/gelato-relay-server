@@ -26,9 +26,8 @@ export const generateDomainSeparator = (name: string, daiAddress: string, chainI
   return utils.keccak256(encodedData);
 }
 
-export const generateDaiDigest = (version: string, name: string, chainId: number, nonce: BigNumberish, expiry: BigNumberish, approve: Approve): string => {
-  const DOMAIN_SEPARATOR = generateDomainSeparator(name, config.DAI_ADDRESS, chainId, version);
-  console.log("DOMAIN_SEPARATOR: ", DOMAIN_SEPARATOR)
+export const generatePermitDigest = (daiAddress: string, version: string, name: string, chainId: number, nonce: BigNumberish, expiry: BigNumberish, approve: Approve): string => {
+  const DOMAIN_SEPARATOR = generateDomainSeparator(name, daiAddress, chainId, version);
   const encodePacked = utils.solidityPack(
     ['bytes1', 'bytes1', 'bytes32', 'bytes32'],
     [
@@ -44,21 +43,14 @@ export const generateDaiDigest = (version: string, name: string, chainId: number
   return utils.keccak256(encodePacked);
 }
 
-export const generateSignature = async (signerOrProvider: Wallet, chainId: number, nonce: BigNumberish, expiry: BigNumberish, approve: Approve): Promise<ECDSASignature> => {
-  const digest = generateDaiDigest(config.DAI_VERSION, config.DAI_NAME, chainId, nonce, expiry, approve);
-  const contract = await daiContract(signerOrProvider);
-  const signature = sign(digest, Buffer.from("4a99e893ee9142f1b8290513d0a0788ec01659713e9b667eee1c7167cf7db9df", 'hex'))
-  const addr = await contract.getAddress(approve.holder, approve.spender, nonce, expiry, approve.allowed, signature.v, signature.r, signature.s) 
-  console.log("ADDR: ", addr)
-  const tx = await contract.permit(approve.holder, approve.spender, nonce, expiry, approve.allowed, signature.v, signature.r, signature.s)
-  console.log("TX: ", tx.hash)
-
-  console.log("BAL: ", (await contract.allowance(approve.holder, approve.spender)).toString())
+export const generateSignature = async (daiAddress: string, chainId: number, nonce: BigNumberish, expiry: BigNumberish, approve: Approve): Promise<ECDSASignature> => {
+  const digest = generatePermitDigest(daiAddress, config.DAI_VERSION, config.DAI_NAME, chainId, nonce, expiry, approve);
+  const signature = sign(digest, "4a99e893ee9142f1b8290513d0a0788ec01659713e9b667eee1c7167cf7db9df")
   return signature; 
 }
 
-export const sign = (digest: any, privateKey: any) => {
-  return ecsign(Buffer.from(digest.slice(2), 'hex'), privateKey)
+export const sign = (digest: any, privateKey: string): ECDSASignature => {
+  return ecsign(Buffer.from(digest.slice(2), 'hex'), Buffer.from(privateKey, 'hex'))
 }
 
 export const signerIsValid = (signer: Signer): boolean => {

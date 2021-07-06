@@ -3,7 +3,7 @@
 //
 // When running the script with `hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
-const hre = require("hardhat");
+import { run, ethers } from "hardhat";
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -11,7 +11,7 @@ async function main() {
   //
   // If this script is run directly using `node` you may want to call compile 
   // manually to make sure everything is compiled
-  // await hre.run('compile');
+  await hre.run('compile');
 
   // We get the contract to deploy
   const Dai = await hre.ethers.getContractFactory("Dai");
