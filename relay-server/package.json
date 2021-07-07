@@ -25,15 +25,19 @@
     "cross-env": "^7.0.3",
     "dotenv": "^10.0.0",
     "eth-permit": "^0.1.10",
-    "ethers": "^5.4.0",
+    "ethereumjs-abi": "^0.6.8",
+    "ethereumjs-util": "^6.2.1",
+    "ethers": "^5.4.1",
     "express": "^4.17.1",
     "helmet": "^4.6.0",
     "moment": "^2.29.1",
     "rimraf": "^3.0.2",
     "ts-node": "^10.0.0",
-    "typescript": "^4.3.5"
+    "typescript": "^4.3.5",
+    "web3": "^1.4.0"
   },
   "devDependencies": {
+    "@types/ethereumjs-abi": "^0.6.3",
     "concurrently": "^6.2.0",
     "nodemon": "^2.0.9"
   }
