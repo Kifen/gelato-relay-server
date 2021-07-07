@@ -25,12 +25,8 @@ contract RelayProxy {
                     bool allowed, uint8 v, bytes32 r, bytes32 s, bytes calldata _data
 ) external returns(bool){
     permit(holder, spender, nonce, expiry, allowed, v, r, s);
-    uint256 spenderAllowance = Dai(dai).allowance(holder, spender);
-    require(spenderAllowance > 0, "RelayProxy: Spender has insufficient alllowance");
-    // require(dai.transferFrom(holder, vault, value), "RelayProxy: Failed to submit Dai limit order");
-
-    bytes memory _data = encodeTokenOrder(_data, holder);
-    (bool success, ) = dai.call(_data);
+    bytes memory encodedTokenData = encodeTokenOrder(_data, holder);
+    (bool success, ) = dai.call(encodedTokenData);
     require(success, "RelayProxy: Failed to submit Dai limit order");
     return true;
   }
@@ -96,7 +92,7 @@ contract RelayProxy {
                     keccak256(
                         abi.encodePacked(
                             bytes1(0xff),
-                            address(this),
+                            gelatoPineCore,
                             _data,
                             vaultCodeHash
                         )

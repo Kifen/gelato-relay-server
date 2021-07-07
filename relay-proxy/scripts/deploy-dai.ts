@@ -3,22 +3,22 @@
 //
 // When running the script with `hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
-import { run, ethers } from "hardhat";
+import { ethers } from 'hardhat';
+import { Contract, ContractFactory } from 'ethers';
 
-async function main() {
+async function main(): Promise<void> {
   // Hardhat always runs the compile task when running scripts with its command
   // line interface.
   //
   // If this script is run directly using `node` you may want to call compile 
   // manually to make sure everything is compiled
-  await hre.run('compile');
-
+  // await run('compile');
+  
   // We get the contract to deploy
-  const Dai = await hre.ethers.getContractFactory("Dai");
-  const dai = await Dai.deploy(3);
-
+  console.log("Deploying Dai Contract...")
+  const DaiFactory: ContractFactory = await ethers.getContractFactory("Dai");
+  const dai: Contract = await DaiFactory.deploy(3);
   await dai.deployed();
-
   console.log("Dai deployed to:", dai.address);
 }
 

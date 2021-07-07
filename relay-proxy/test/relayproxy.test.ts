@@ -1,7 +1,7 @@
 import { ethers, waffle } from "hardhat";
 import { expect } from "chai";
 import { BigNumber, utils, Wallet } from "ethers";
-import { generatePermitDigest, sign, encodeSubmitOrder, encodedData } from "../../relay-server/src/relay-order-lib/utils";
+import { generatePermitDigest, sign, encodeSubmitOrder, encodedData, fullSecret } from "../../relay-server/src/relay-order-lib/utils";
 import { Approve } from "../../relay-server/src/relay-order-lib/types";
 import { Dai, RelayProxy, RelayProxy__factory, Dai__factory } from "../typechain";
 const { deployContract } = waffle;
@@ -28,7 +28,6 @@ describe("RelayProxy", () => {
   const nonce = 0;
   const expiry = Date.now() + 120;
   const pk = "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-  const fullSecret = "0xdf57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e"
   const outputToken = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
   const gelatoPineCore = "0x36049D479A97CdE1fC6E2a5D2caE30B666Ebf92B"
 
@@ -57,7 +56,8 @@ describe("RelayProxy", () => {
     }
 
     const data = encodedData(outputToken, minReturn)
-    const { address: witness } = new Wallet(fullSecret);
+    const randomSecret = utils.hexlify(utils.randomBytes(13)).replace("0x", "")
+    const { witness } = fullSecret(randomSecret);
 
     const vaultData = new utils.AbiCoder().encode(
       ["address", "address", "address", "address", "bytes"],
@@ -72,7 +72,7 @@ describe("RelayProxy", () => {
   })
 
   it("should decode a submit order data", async () => {
-    const endodedSubmitData = encodeSubmitOrder(mockModuleAddress, dai.address, outputToken, ownerAddress, minReturn, inputAmount, vaultAddress, undefined, fullSecret)
+    const endodedSubmitData = encodeSubmitOrder(mockModuleAddress, dai.address, outputToken, ownerAddress, minReturn, inputAmount, vaultAddress, undefined)
 
     const utilsDecodedData = new utils.AbiCoder().decode(
       ["address", "address", "address", "address", "bytes", "bytes32", "uint256", "address"],
@@ -94,8 +94,8 @@ describe("RelayProxy", () => {
   it("Should successfully permit spender and submit limit order", async () => {
     const digest = await generatePermitDigest(dai.address, version, name, chainId, nonce, expiry, approve);
     const sig = sign(digest, pk)
-    const endodedSubmitData = encodeSubmitOrder(mockModuleAddress, dai.address, outputToken, ownerAddress, minReturn, inputAmount, vaultAddress, undefined, fullSecret)
- 
+    const endodedSubmitData = encodeSubmitOrder(mockModuleAddress, dai.address, outputToken, ownerAddress, minReturn, inputAmount, vaultAddress, undefined)
+
     const tx = await relayProxy.submitDaiLimitOrder(approve.holder, approve.spender, nonce, expiry, approve.allowed, sig.v, sig.r, sig.s, endodedSubmitData)
 
     const holderBalance: BigNumber = mintAmount.sub(inputAmount)
@@ -105,7 +105,7 @@ describe("RelayProxy", () => {
   })
 
   // it("should get vault address", async () => {
-  //   const endodedData = encodeSubmitOrder(mockModuleAddress, dai.address, outputToken, ownerAddress, minReturn, inputAmount, vaultAddress, undefined, fullSecret)
+  //   const endodedData = encodeSubmitOrder(mockModuleAddress, dai.address, outputToken, ownerAddress, minReturn, inputAmount, vaultAddress, undefined)
 
   //   const decodedData = new utils.AbiCoder().decode(
   //     ["address", "address", "address", "address", "bytes", "bytes32", "uint256", "address"],
@@ -117,8 +117,6 @@ describe("RelayProxy", () => {
   //     [mockModuleAddress, dai.address, ownerAddress, decodedData[3], decodedData[4]]
   //   )
 
-  //   const tx = await relayProxy.executeVault(utils.keccak256(vaultData))
-  //   const receipt = await tx.wait()
-  //   console.log(vaultAddress, await relayProxy.vaultAddress())  
+  //   console.log(vaultAddress, await relayProxy.getVault(utils.keccak256(vaultData)))  
   // })
 })

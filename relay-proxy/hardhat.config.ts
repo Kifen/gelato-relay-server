@@ -26,7 +26,9 @@ module.exports = {
   networks: {
   	ropsten: {
   		url: process.env.ROPSTEN_URL,
-  		accounts: [`0x${process.env.PK}`]
+  		accounts: [`0x${process.env.PK}`],
+      chainId: 3,
+      gas: "auto"
   	}
   },
   typechain: {
