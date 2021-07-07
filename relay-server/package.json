@@ -22,6 +22,7 @@
     "@types/node": "^15.14.0",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
+    "commander": "^8.0.0",
     "cross-env": "^7.0.3",
     "dotenv": "^10.0.0",
     "eth-permit": "^0.1.10",
