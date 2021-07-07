@@ -1,3 +1,4 @@
 node_modules/
 dist/
 scripts/run.ts
+.env.development

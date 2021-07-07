@@ -1,8 +1,9 @@
 import { ChainId, Handler } from "@gelatonetwork/limit-orders-lib";
 import axios from 'axios';
+import { bufferToHex } from "ethereumjs-util";
 import { BigNumberish, Signature, Wallet } from 'ethers';
-import config from '../../config';
 import { providerIsValid, signerIsValid, generatePermitDigest, sign, daiContract } from './utils';
+import { DAI_ADDRESS, DAI_VERSION, DAI_NAME, RELAYER_PROXY_ADDRESS, RELAYER_SERVER_URL } from "./constants";
 
 export const submitLimitOrder = async (
   signerOrProvider: Wallet,
@@ -21,21 +22,21 @@ export const submitLimitOrder = async (
 
   const owner = await signerOrProvider?.getAddress();
   const contract = await daiContract(signerOrProvider);
-  const nonce = await contract.nonces(owner);
+  let nonce = await contract.nonces(owner);
 
   const approve = {
-    spender: config.RELAYER_PROXY_ADDRESS,
+    spender: RELAYER_PROXY_ADDRESS,
     holder: owner,
     allowed: true
   }
   
-  const digest = await generatePermitDigest(config.DAI_ADDRESS, config.DAI_VERSION, config.DAI_NAME,chainId, nonce, expiry, approve);
+  const digest = await generatePermitDigest(DAI_ADDRESS, DAI_VERSION, DAI_NAME, chainId, nonce, expiry, approve);
   const signature = sign(digest, pk)
   const data = {
     signature: {
       v: signature.v,
-      r: signature.r,
-      s: signature.s,
+      r: bufferToHex(signature.r),
+      s: bufferToHex(signature.s),
     },
     inputToken,
     outputToken,
@@ -43,13 +44,15 @@ export const submitLimitOrder = async (
     owner,
     inputAmount,
     approve,
-    nonce,
+    nonce: nonce++,
     expiry,
+    chainId
   }
 
+  console.log(data)
   axios({
     method: 'post',
-    url: config.RELAYER_SERVER_URL,
+    url: RELAYER_SERVER_URL,
     data: data,
   })
 }

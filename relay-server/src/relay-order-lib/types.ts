@@ -1,3 +1,5 @@
+import { ChainId } from "@gelatonetwork/limit-orders-lib";
+
 export const MAX_INT = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
 
 export type Approve = {
@@ -12,6 +14,11 @@ export type Signature = {
   s: string;
 }
 
+export type FullSecret = {
+  secret: string;
+  witness: string;
+}
+
 export type RelayerOrder = {
   signature: Signature;
   inputToken: string;
@@ -22,4 +29,5 @@ export type RelayerOrder = {
   approve: Approve;
   nonce: number;
   expiry: number;
+  chainId: ChainId
 }
