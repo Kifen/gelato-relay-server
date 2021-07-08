@@ -19,14 +19,15 @@ export const relay = async (req: Request, res: Response, next: NextFunction): Pr
     [moduleAddress, data.inputToken, data.owner, witness, keyData]
   )
 
-  const vaultAddress = await contract.getVault(utils.keccak256(vaultData))
+  const orderKey = utils.keccak256(vaultData)
+  const vaultAddress = await contract.getVault(orderKey)
+  console.log("Order key: ", orderKey)
+  console.log("Vault address: ", vaultAddress)
+
   const endodedSubmitData = encodeSubmitOrder(moduleAddress, data.inputToken, data.outputToken, data.owner, data.minReturn, data.inputAmount, vaultAddress, undefined)
-  console.log("endodedSubmitData: ", endodedSubmitData)
-  // const order = await contract.decodeOrder(endodedSubmitData);
-  // console.log(order)
+
   const options = { gasPrice: 500000, gasLimit: 2000000};
   const tx = await contract.submitDaiLimitOrder(data.approve.holder, data.approve.spender, data.nonce, data.expiry, data.approve.allowed, data.signature.v, data.signature.r, data.signature.s, endodedSubmitData)
-
   console.log(tx)
 
   console.log("Submitting Gelato Limit Order...")
