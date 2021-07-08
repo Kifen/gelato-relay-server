@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import { route } from './relayer/routes';
 
 const app: Express = express();
-const PORT: number = 3000;
+const PORT: number = 5000;
 
 // app.use((req, res, next) => {
 //   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, OPTIONS");

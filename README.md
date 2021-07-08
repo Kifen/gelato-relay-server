@@ -39,5 +39,5 @@ Go to directory **relay-server**:
 
   `RELAYER_SERVER_URL`=`http://localhost:3000/api/v1/relay`
 
-- Open a terminal and run `npm run serve`
+- Open a terminal and run `export NODE_ENV=development & npm run serve`
 - In another new terminal run CLI `npx ts-node scripts/run.ts -a <inputAmount> -m <minReturn>`

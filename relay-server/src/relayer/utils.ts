@@ -3,7 +3,7 @@ import { BigNumberish, utils, Contract, providers, Wallet } from 'ethers';
 import { Signer } from '@ethersproject/abstract-signer';
 import { Provider } from "@ethersproject/abstract-provider";
 import DaiABI from "../../abi/dai.json";
-import RelayerABI from '../../abi/RelayProxy.json';
+import RelayerABI from '../../abi/relayProxy.json';
 import { DAI_ADDRESS, RPC_URL, PK, RELAYER_PROXY_ADDRESS } 
 from '../relay-order-lib/constants';
 import { ECDSASignature } from 'ethereumjs-util'
