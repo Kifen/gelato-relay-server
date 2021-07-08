@@ -1,5 +1,5 @@
 # gelato-relay-server
-A relay server to handle meta transactions for **Dai** tokens to **Gelato**. This project is comoposed of:
+A relay server that handles submission of **Dai** limit orders to **Gelato**. This project is comoposed of:
 
 - **relay-server**: Server code.
 - **relay-proxy**: Relay proxy smart contract.
