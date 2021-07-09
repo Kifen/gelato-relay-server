@@ -1,104 +1,63 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.4.22 <0.9.0;
+pragma solidity 0.8.6;
 
-import "./Dai.sol";
+import {IDai} from "./IDai.sol";
+import {IGelatoPineCore} from "./IGelatoPineCore.sol";
 
 contract RelayProxy {
+    IDai public immutable dai;
+    IGelatoPineCore public immutable gelatoPineCore;
 
-  address public dai;
-  address public gelatoPineCore;
-
- bytes32 public constant vaultCodeHash =
-        bytes32(
-            0xfa3da1081bc86587310fce8f3a5309785fc567b9b20875900cb289302d6bfa97
-        );
-
- bytes public constant code =
-        hex"6012600081600A8239F360008060448082803781806038355AF132FF";
-
-  constructor(address _dai, address _gelato) public {
-    dai = _dai;
-    gelatoPineCore = _gelato;
-  }
-
-  function submitDaiLimitOrder(address holder, address spender, uint256 nonce, uint256 expiry,
-                    bool allowed, uint8 v, bytes32 r, bytes32 s, bytes calldata _data
-) external returns(bool){
-    permit(holder, spender, nonce, expiry, allowed, v, r, s);
-    bytes memory encodedTokenData = encodeTokenOrder(_data, holder);
-    (bool success, ) = dai.call(encodedTokenData);
-    require(success, "RelayProxy: Failed to submit Dai limit order");
-    return true;
-  }
-
-  function permit(address holder, address spender, uint256 nonce, uint256 expiry,
-                    bool allowed, uint8 v, bytes32 r, bytes32 s) internal {
-    Dai(dai).permit(holder, spender, nonce, expiry, allowed, v, r, s);
-  }
-
-  function decodeOrder(bytes memory _data)  public
-        pure
-        returns (
-            address module,
-            address inputToken,
-            address payable owner,
-            address witness,
-            bytes memory data,
-            bytes32 secret,
-            uint256 value,
-            address vault
-        ) {
-           (module, inputToken, owner, witness, data, secret, value, vault) = abi.decode(
-            _data,
-            (address, address, address, address, bytes, bytes32, uint256, address)
-        );
-  }
-
-    function encodeTokenOrder(
-        bytes memory _data, address holder
-    ) public view returns (bytes memory) {
-        (
-        address module,
-        address inputToken,
-        address payable owner,
-        address witness,
-        bytes memory data,
-        bytes32 secret,
-        uint256 value,
-        address vault
-    ) = decodeOrder(_data);
-
-    return abi.encodeWithSelector(
-                Dai(dai).transferFrom.selector,
-                holder,
-                vault,
-                value,
-                abi.encode(
-                    module,
-                    inputToken,
-                    owner,
-                    witness,
-                    data,
-                    secret
-                )
-            );
+    struct PermitData {
+        uint256 nonce;
+        uint256 expiry;
+        bool allowed;
+        uint8 v;
+        bytes32 r;
+        bytes32 s;
     }
 
-      function getVault(bytes32 _data) public view returns (address) {
-        return
-            address(
-              uint160(
-                uint256(
-                    keccak256(
-                        abi.encodePacked(
-                            bytes1(0xff),
-                            gelatoPineCore,
-                            _data,
-                            vaultCodeHash
-                        )
-                    )
-                )
-            )
-            );
+    struct TokenOrder {
+        address module;
+        address inToken;
+        address payable owner;
+        address witness;
+        bytes limitOrderData;
+        bytes32 secret; // only here for subgraph indexing
+    }
+
+    constructor(IDai _dai, IGelatoPineCore _gelato) {
+        dai = _dai;
+        gelatoPineCore = _gelato;
+    }
+
+    /// @param _tokenOrder needs to follow format and must be last param
+    function submitDaiLimitOrder(
+        PermitData calldata _permitData,
+        uint256 _amount,
+        TokenOrder calldata _tokenOrder
+    ) external {
+        dai.permit(
+            _tokenOrder.owner,
+            address(this),
+            _permitData.nonce,
+            _permitData.expiry,
+            _permitData.allowed,
+            _permitData.v,
+            _permitData.r,
+            _permitData.s
+        );
+
+        dai.transferFrom(
+            _tokenOrder.owner,
+            gelatoPineCore.vaultOfOrder(
+                _tokenOrder.module,
+                _tokenOrder.inToken,
+                _tokenOrder.owner,
+                _tokenOrder.witness,
+                _tokenOrder.limitOrderData
+            ),
+            _amount
+        );
     }
 }
