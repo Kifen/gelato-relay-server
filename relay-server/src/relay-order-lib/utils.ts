@@ -78,50 +78,6 @@ export const generatePermitDigest = async (
     ]
   );
 
-  console.log('OFFCHAIN-DIGEST: ', utils.keccak256(encodePacked));
-  console.log(
-    'offchain-HALF-DIGEST: ',
-    utils.keccak256(
-      new utils.AbiCoder().encode(
-        ['bytes32', 'address', 'address', 'uint256', 'uint256', 'bool'],
-        [
-          PERMIT_TYPEHASH,
-          approve.holder,
-          approve.spender,
-          nonce,
-          expiry,
-          approve.allowed
-        ]
-      )
-    )
-  );
-
-  const contract = new Contract(
-    DAI_ADDRESS,
-    ABI.abi,
-    new providers.JsonRpcProvider(RPC_URL)
-  );
-  console.log(
-    'ONCHAIN-DIGEST: ',
-    await contract.getDigest(
-      approve.holder,
-      approve.spender,
-      nonce,
-      expiry,
-      approve.allowed
-    )
-  );
-  console.log(
-    'ONCHAIN-HALFDIGEST: ',
-    await contract.getHalfDigest(
-      approve.holder,
-      approve.spender,
-      nonce,
-      expiry,
-      approve.allowed
-    )
-  );
-  console.log('ADDRESS: ', await contract.PERMIT_TYPEHASH());
   return utils.keccak256(encodePacked);
 };
 
@@ -162,13 +118,16 @@ export const encodeSubmitOrder = (
 };
 
 export const fullSecret = (randomSecret: string): FullSecret => {
-  const fullSecret = `0x4200696e652e66696e616e63652020d83ddc09${randomSecret}`;
+  // Gelato Identifier: 0x67656c61746f6e6574776f726b
+  const fullSecret = `0x67656c61746f6e6574776f726b2020d83ddc09${randomSecret}`;
+
   const { privateKey: secret, address: witness } = new Wallet(fullSecret);
   return {
     secret,
     witness
   };
-};
+}; 
+
 
 export const encodedData = (
   outputToken: string,

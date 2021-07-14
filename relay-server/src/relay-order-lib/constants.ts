@@ -7,7 +7,7 @@ export const DAI_ADDRESS = process.env.DAI_ADDRESS;
 export const DAI_NAME = process.env.DAI_NAME;
 export const DAI_VERSION = process.env.DAI_VERSION;
 export const PK = process.env.PK;
-export const GELATO_PINE_CORE = process.env.GELATO_PINE_CORE;
+export const ERC20_ORDER_ROUTER = process.env.ERC20_ORDER_ROUTER;
 export const RPC_URL = process.env.RPC_URL;
 export const PORT = process.env.PORT;
 

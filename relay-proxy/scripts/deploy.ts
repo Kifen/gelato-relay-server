@@ -25,7 +25,7 @@ async function main(): Promise<void> {
 
   console.log("Deploying RelayProxy Contract...")
   const relayProxyFactory: ContractFactory = await ethers.getContractFactory("RelayProxy");
-  const relayProxy: Contract = await relayProxyFactory.deploy(dai.address);
+  const relayProxy: Contract = await relayProxyFactory.deploy(dai.address, process.env.ERC20_ORDER_ROUTER);
   await relayProxy.deployed();
   console.log("RelayProxy deployed to:", relayProxy.address);
 }

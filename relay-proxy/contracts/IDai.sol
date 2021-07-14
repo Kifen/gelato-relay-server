@@ -27,4 +27,6 @@ interface IDai {
         uint8 v,
         bytes32 r,
         bytes32 s) external view returns (address);
+
+    function approve(address usr, uint256 wad) external returns (bool);
 }
