@@ -25,7 +25,7 @@ async function main(): Promise<void> {
 
   console.log("Deploying RelayProxy Contract...")
   const relayProxyFactory: ContractFactory = await ethers.getContractFactory("RelayProxy");
-  const relayProxy: Contract = await relayProxyFactory.deploy(dai.address, process.env.GELATO_PINE_CORE);
+  const relayProxy: Contract = await relayProxyFactory.deploy(dai.address);
   await relayProxy.deployed();
   console.log("RelayProxy deployed to:", relayProxy.address);
 }

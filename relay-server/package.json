@@ -9,6 +9,8 @@
     "serve": "cross-env NODE_ENV=development concurrently \"tsc --watch\" \"nodemon -q dist/src/server.js\"",
     "prestart": "npm run build",
     "start": "cross-env NODE_ENV=production node dist/src/server.js",
+    "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "prettier-watch": "onchange 'src/**/*.ts' -- prettier --write {{changed}}",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -40,6 +42,7 @@
   "devDependencies": {
     "@types/ethereumjs-abi": "^0.6.3",
     "concurrently": "^6.2.0",
-    "nodemon": "^2.0.9"
+    "nodemon": "^2.0.9",
+    "prettier": "^2.3.2"
   }
 }

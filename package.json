@@ -1,5 +1,8 @@
 {
   "scripts": {
     "start": "cd relay-server && npm install && npm run serve"
+  },
+  "devDependencies": {
+    "prettier": "^2.3.2"
   }
 }

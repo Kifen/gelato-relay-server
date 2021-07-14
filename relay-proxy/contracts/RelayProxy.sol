@@ -2,11 +2,9 @@
 pragma solidity 0.8.6;
 
 import {IDai} from "./IDai.sol";
-import {IGelatoPineCore} from "./IGelatoPineCore.sol";
 
 contract RelayProxy {
     IDai public immutable dai;
-    IGelatoPineCore public immutable gelatoPineCore;
 
     struct PermitData {
         uint256 nonce;
@@ -26,9 +24,8 @@ contract RelayProxy {
         bytes32 secret; // only here for subgraph indexing
     }
 
-    constructor(IDai _dai, IGelatoPineCore _gelato) {
+    constructor(IDai _dai) {
         dai = _dai;
-        gelatoPineCore = _gelato;
     }
 
     /// @param _tokenOrder needs to follow format and must be last param
@@ -50,13 +47,7 @@ contract RelayProxy {
 
         dai.transferFrom(
             _tokenOrder.owner,
-            gelatoPineCore.vaultOfOrder(
-                _tokenOrder.module,
-                _tokenOrder.inToken,
-                _tokenOrder.owner,
-                _tokenOrder.witness,
-                _tokenOrder.limitOrderData
-            ),
+            address(this),
             _amount
         );
     }

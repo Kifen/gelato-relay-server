@@ -27,7 +27,7 @@ const run = (async () => {
   const pk = PK
   const signer = new Wallet(pk);
   const signerOrProvider  = await signer.connect(provider);
-  await submitLimitOrder(signerOrProvider, inputToken, outputToken, inputAmount, minReturn, "uniswap", 3, Date.now() + 120, pk);
+  await submitLimitOrder(signerOrProvider, inputToken, outputToken, inputAmount, minReturn, "uniswap", 3, Date.now() + 20000000, pk);
 })()
 
 function check(): boolean {
