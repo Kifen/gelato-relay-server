@@ -4,18 +4,12 @@ import { Signer } from '@ethersproject/abstract-signer';
 import { Provider } from '@ethersproject/abstract-provider';
 import DaiABI from '../../abi/dai.json';
 import RelayerABI from '../../abi/relayProxy.json';
-import {
-  DAI_ADDRESS,
-  RPC_URL,
-  PK,
-  RELAYER_PROXY_ADDRESS
-} from '../relay-order-lib/constants';
+import { DAI_ADDRESS, RPC_URL, PK, RELAYER_PROXY_ADDRESS } from '../relay-order-lib/constants';
 import { ECDSASignature } from 'ethereumjs-util';
 
-export const asyncHandler =
-  (fn: Function) => (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
+export const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextFunction) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
 
 export const daiContract = async (): Promise<Contract> => {
   const signer: Signer = new Wallet(PK);

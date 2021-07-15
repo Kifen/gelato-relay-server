@@ -2,20 +2,8 @@ import { ChainId, Handler } from '@gelatonetwork/limit-orders-lib';
 import axios from 'axios';
 import { bufferToHex } from 'ethereumjs-util';
 import { BigNumberish, Signature, Wallet } from 'ethers';
-import {
-  providerIsValid,
-  signerIsValid,
-  generatePermitDigest,
-  sign,
-  daiContract
-} from './utils';
-import {
-  DAI_ADDRESS,
-  DAI_VERSION,
-  DAI_NAME,
-  RELAYER_PROXY_ADDRESS,
-  RELAYER_SERVER_URL
-} from './constants';
+import { providerIsValid, signerIsValid, generatePermitDigest, sign, daiContract } from './utils';
+import { DAI_ADDRESS, DAI_VERSION, DAI_NAME, RELAYER_PROXY_ADDRESS, RELAYER_SERVER_URL } from './constants';
 
 export const submitLimitOrder = async (
   signerOrProvider: Wallet,
@@ -26,7 +14,7 @@ export const submitLimitOrder = async (
   handler: Handler,
   chainId: ChainId,
   expiry: number,
-  pk: string
+  pk: string,
 ) => {
   if (!(chainId as ChainId)) throw new Error('NETWORK NOT SUPPORTED');
   if (!signerIsValid(signerOrProvider)) throw new Error('Invalid Signer');
@@ -39,24 +27,16 @@ export const submitLimitOrder = async (
   const approve = {
     spender: RELAYER_PROXY_ADDRESS,
     holder: owner,
-    allowed: true
+    allowed: true,
   };
 
-  const digest = await generatePermitDigest(
-    DAI_ADDRESS,
-    DAI_VERSION,
-    DAI_NAME,
-    chainId,
-    nonce,
-    expiry,
-    approve
-  );
+  const digest = await generatePermitDigest(DAI_ADDRESS, DAI_VERSION, DAI_NAME, chainId, nonce, expiry, approve);
   const signature = sign(digest, pk);
   const data = {
     signature: {
       v: signature.v,
       r: bufferToHex(signature.r),
-      s: bufferToHex(signature.s)
+      s: bufferToHex(signature.s),
     },
     inputToken,
     outputToken,
@@ -65,13 +45,13 @@ export const submitLimitOrder = async (
     approve,
     nonce: nonce++,
     expiry,
-    chainId
+    chainId,
   };
 
   console.log(data);
   axios({
     method: 'post',
     url: RELAYER_SERVER_URL,
-    data: data
+    data: data,
   });
 };

@@ -8244,7 +8244,7 @@
   "resolved" "https://registry.npmjs.org/prepend-http/-/prepend-http-2.0.0.tgz"
   "version" "2.0.0"
 
-"prettier-plugin-solidity@1.0.0-beta.11":
+"prettier-plugin-solidity@^1.0.0-beta.11":
   "integrity" "sha512-b3lh/9tn9BC3I723Aa91zebw2NDlbbBroKg7izP+jU0QfrLO6ldi0jY0XrqX3+zGqAI2aLcP8Jr1eGdymK5CgQ=="
   "resolved" "https://registry.npmjs.org/prettier-plugin-solidity/-/prettier-plugin-solidity-1.0.0-beta.11.tgz"
   "version" "1.0.0-beta.11"
@@ -8258,7 +8258,7 @@
     "solidity-comments-extractor" "^0.0.7"
     "string-width" "^4.2.2"
 
-"prettier@^2.1.2", "prettier@^2.2.1", "prettier@2.3.1":
+"prettier@^2.1.2", "prettier@^2.2.1", "prettier@^2.3.1":
   "integrity" "sha512-p+vNbgpLjif/+D+DwAZAbndtRrR0md0MwfmOVN9N+2RgyACMT+7tfaRnT+WDPkqnuVwleyuBIG2XBxKDme3hPA=="
   "resolved" "https://registry.npmjs.org/prettier/-/prettier-2.3.1.tgz"
   "version" "2.3.1"

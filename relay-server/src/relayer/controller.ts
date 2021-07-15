@@ -2,17 +2,10 @@ import { Request, Response, NextFunction } from 'express';
 import { RelayerOrder, TokenOrder, PermitData } from '../relay-order-lib/types';
 import { relayProxyContract, daiContract } from './utils';
 import { utils } from 'ethers';
-import {
-  encodedData,
-  fullSecret
-} from '../relay-order-lib/utils';
+import { encodedData, fullSecret } from '../relay-order-lib/utils';
 import { GELATO_LIMIT_ORDERS_MODULE_ADDRESS } from '../relay-order-lib/constants';
 
-export const relay = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const relay = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const data: RelayerOrder = req.body;
   const dai = await daiContract();
   const proxy = await relayProxyContract();
@@ -28,7 +21,7 @@ export const relay = async (
     allowed: data.approve.allowed,
     v: data.signature.v,
     r: data.signature.r,
-    s: data.signature.s
+    s: data.signature.s,
   };
 
   const tokenOrder = {
@@ -37,16 +30,16 @@ export const relay = async (
     owner: data.approve.holder,
     witness,
     limitOrderData,
-    secret
+    secret,
   };
-   
-  const options = { gasPrice: utils.parseUnits("400", "gwei"), gasLimit: 1000000};
+
+  const options = { gasPrice: utils.parseUnits('400', 'gwei'), gasLimit: 1000000 };
   const tx = await proxy.submitDaiLimitOrder(permitData, data.inputAmount, tokenOrder, options);
 
-  console.log(tx)
+  console.log(tx);
 
   console.log('Submitted new DAI limit order...');
   res.status(200).json({
-    success: true
+    success: true,
   });
 };

@@ -1,7 +1,6 @@
 import { ChainId } from '@gelatonetwork/limit-orders-lib';
 
-export const MAX_INT =
-  '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+export const MAX_INT = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
 
 export type Approve = {
   spender: string;
