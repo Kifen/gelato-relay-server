@@ -1,4 +1,4 @@
-import { ChainId, Handler } from '@gelatonetwork/limit-orders-lib';
+import { ChainId } from '@gelatonetwork/limit-orders-lib';
 import axios from 'axios';
 import { bufferToHex } from 'ethereumjs-util';
 import { BigNumberish, Signature, Wallet } from 'ethers';
@@ -11,7 +11,6 @@ export const submitLimitOrder = async (
   outputToken: string,
   inputAmount: BigNumberish,
   minReturn: BigNumberish,
-  handler: Handler,
   chainId: ChainId,
   expiry: number,
   pk: string,
